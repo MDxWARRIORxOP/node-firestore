@@ -1,19 +1,17 @@
 {
-  "name": "awesome-firebase",
+  "name": "node-firestore",
   "version": "1.0.0",
-  "description": "Using Firebase made easy! Supports Firestore, Auth, And realtime db! (more coming soon)",
+  "description": "Using Firestore made easy!",
   "keywords": [
     "easy-db",
-    "easy-auth",
     "easy",
     "firebase",
     "firestore",
-    "auth",
-    "awesome-firebase"
+    "node-firestore"
   ],
-  "homepage": "https://github.com/MDxWARRIORxOP/awesome-firebase#readme",
+  "homepage": "https://github.com/MDxWARRIORxOP/node-firestore#readme",
   "bugs": {
-    "url": "https://github.com/MDxWARRIORxOP/awesome-firebase/issues",
+    "url": "https://github.com/MDxWARRIORxOP/node-firestore/issues",
     "email": "Kingerious@circel.co"
   },
   "license": "BSD-3-Clause",
@@ -21,10 +19,10 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MDxWARRIORxOP/awesome-firebase.git"
+    "url": "https://github.com/MDxWARRIORxOP/node-firestore.git"
   },
   "scripts": {
-    "start": "node ."
+    "storetest": "yarn node test/firestore.js"
   },
   "packageManager": "yarn@3.2.4"
 }

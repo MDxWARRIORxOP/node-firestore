@@ -1,83 +1,159 @@
-require("dotenv").config();
 const firebase = require("firebase-admin/app");
 const firestore = require("firebase-admin/firestore");
-const Config = require("./config.json");
 
-const app = firebase.initializeApp({
-  credential: firebase.cert(Config.FIREBASE_CONFIG),
-});
+let app;
+let db;
 
-const db = firestore.getFirestore(app);
+/**
+ * @typedef {Object} firebaseConfig
+ * @property {String} type
+ * @property {String} project_id
+ * @property {String} private_key_id
+ * @property {String} private_key
+ * @property {String} client_email
+ * @property {String} client_id
+ * @property {String} auth_uri
+ * @property {String} token_uri
+ * @property {String} auth_provider_x509_cert_url
+ * @property {String} client_x509_cert_url
+ */
 
-const addTestData = async () => {
-  // data from docs
-  const docRef = db.collection("users").doc("alovelace");
+/**
+ * @param {firebaseConfig} config Your Firebase service account config
+ */
+const initialize = async (config) => {
+  if (!app || !db) {
+    app = await firebase.initializeApp({
+      credential: firebase.cert(config),
+    });
 
-  await docRef.set({
-    first: "Ada",
-    last: "Lovelace",
-    born: 1815,
-  });
-
-  const aTuringRef = db.collection("users").doc("aturing");
-
-  await aTuringRef.set({
-    first: "Alan",
-    middle: "Mathison",
-    last: "Turing",
-    born: 1912,
-  });
+    db = await firestore.getFirestore(app);
+  }
 };
 
 /**
  *  @param {String} collectionName name of the collection to add data to.
  *  @param {String} docName name of the document to add data to.
- *  @param dataObj JS object, the data to add to the document.
+ *  @param {{}} dataObj JS object, the data to add to the document.
+ *  @returns {Boolean} true if successful or false
  *  @example await addData("users", "test", {hello: "world"})
- *  @returns data Reference
  **/
 const addData = async (collectionName, docName, dataObj) => {
-  const dataRef = db.collection(collectionName).doc(docName);
+  if (!app || !db) {
+    throw new Error(
+      "Firebase is not initialized. Please initialize firebase before trying to access any of its service."
+    );
+  }
 
-  const dataSet = await dataRef.set(dataObj);
-  
-  return dataSet;
-};
-
-/**
- *  @param {String} collectionName name of the collection to get a doc from.
- *  @param {String} docName name of the doc ot get data from.
- *  @example const data = await getData("users", "Kingerious")
- *  @returns if no data is found, returns null, if data is found, returns the document data as a JS Object
- **/
-const getData = async (collectionName, docName) => {
-  const dataRef = db.collection(collectionName).doc(docName);
-  const doc = await dataRef.get();
-  if (!doc.exists) {
-    return null;
-  } else {
-    return doc.data();
+  try {
+    const dataRef = await db.collection(collectionName).doc(docName);
+    await dataRef.set(dataObj);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
   }
 };
 
 /**
- *
+ * @returns data if all is successful, or false
+ *  @param {String} collectionName name of the collection to get a doc from.
+ *  @param {String} docName name of the doc ot get data from.
+ *  @example const data = await getData("users", "Kingerious")
+
+ **/
+const getData = async (collectionName, docName) => {
+  if (!app || !db) {
+    throw new Error(
+      "Firebase is not initialized. Please initialize firebase before trying to access any of its service."
+    );
+  }
+
+  try {
+    const dataRef = db.collection(collectionName).doc(docName);
+    const doc = await dataRef.get();
+    if (!doc.exists) {
+      return false;
+    } else {
+      return doc.data();
+    }
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
+/**
+ * @returns {Boolean} true if all is successful, or false
  * @param {String} collectionName The name of the collection
  * @param {String} docName The name of teh document
  * @example await deleteData("cities", "LA")
+ * @remarks Doesn't delete sub collections.
  */
 const deleteData = async (collectionName, docName) => {
+  if (!app || !db) {
+    throw new Error(
+      "Firebase is not initialized. Please initialize firebase before trying to access any of its service."
+    );
+  }
+
   try {
-    const res = await db.collection(collectionName).doc(docName).delete();
-    return res;
+    await db.collection(collectionName).doc(docName).delete();
+    return true;
   } catch (error) {
     console.error(error);
-    return error;
+    return false;
+  }
+};
+
+const deleteBatches = async (query) => {
+  const snapshot = await query.get();
+
+  const batchSize = snapshot.size;
+  if (batchSize === 0) {
+    return true;
+  }
+
+  // Delete documents in a batch
+  const batch = db.batch();
+  snapshot.docs.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+  await batch.commit();
+
+  process.nextTick(() => {
+    deleteBatches(query);
+  });
+};
+
+/**
+ * @param {String} collectionName The name of the collection to delete
+ * @param {Number} batchSize The size of the batches to delete
+ * @returns {Boolean} true is successful or false
+ */
+const deleteCollection = async (collectionName, batchSize) => {
+  if (!app || !db) {
+    throw new Error(
+      "Firebase is not initialized. Please initialize firebase before trying to access any of its service."
+    );
+  }
+
+  try {
+    const collectionRef = await db.collection(collectionName);
+    const query = await collectionRef.orderBy("__name__").limit(batchSize);
+
+    await deleteBatches(query);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
   }
 };
 
 module.exports = {
+  initialize,
   addData,
   getData,
   deleteData,
+  deleteCollection,
 };
