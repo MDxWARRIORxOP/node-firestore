@@ -1,0 +1,29 @@
+{
+  "name": "easy-firestore",
+  "version": "1.0.3",
+  "description": "We have lot of functions to help you through your project!",
+  "keywords": [
+    "easy-db",
+    "easy",
+    "firebase",
+    "firestore",
+    "easy-firestore",
+    "easy-firebase"
+  ],
+  "homepage": "https://github.com/MDxWARRIORxOP/easy-firestore#readme",
+  "bugs": {
+    "url": "https://github.com/MDxWARRIORxOP/easy-firestore/issues",
+    "email": "Kingerious@circel.co"
+  },
+  "license": "BSD-3-Clause",
+  "author": "Kingerious <Kingerious@circel.co>",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MDxWARRIORxOP/easy-firestore.git"
+  },
+  "scripts": {
+    "start": "node ."
+  },
+  "packageManager": "yarn@3.2.4"
+}

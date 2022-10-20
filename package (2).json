@@ -1,0 +1,28 @@
+{
+  "name": "create-uniux-app",
+  "version": "1.0.3",
+  "description": "Create A UniUX App For Your Next Project!",
+  "keywords": [
+    "create-uniux-app",
+    "uniux",
+    "typescript uniux",
+    "circel"
+  ],
+  "homepage": "https://github.com/MDxWARRIORxOP/create-uniux-app#readme",
+  "bugs": {
+    "url": "https://github.com/MDxWARRIORxOP/create-uniux-app/issues",
+    "email": "Kingerious@circel.co"
+  },
+  "license": "BSD-3-Clause",
+  "author": "Kingerious <Kingerious@circel.co>",
+  "main": "index.js",
+  "bin": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MDxWARRIORxOP/create-uniux-app.git"
+  },
+  "scripts": {
+    "start": "node ."
+  },
+  "packageManager": "yarn@3.2.3"
+}
