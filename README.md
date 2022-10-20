@@ -2,8 +2,6 @@
 
 <p align="center">Using Firestore made easy!</p>
 
-We provide helper functions to help your developer experience!
-
 ## <h1>Functions</h1>
 
 ```js
