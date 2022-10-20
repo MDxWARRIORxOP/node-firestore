@@ -10,5 +10,5 @@
 !.yarn/cache
 #.pnp.*
 
-# remove the node_modules folder
 node_modules/
+.vscode/

@@ -1,18 +1,19 @@
 {
-  "name": "easy-firestore",
-  "version": "1.0.3",
-  "description": "We have lot of functions to help you through your project!",
+  "name": "awesome-firebase",
+  "version": "1.0.0",
+  "description": "Using Firebase made easy! Supports Firestore, Auth, And realtime db! (more coming soon)",
   "keywords": [
     "easy-db",
+    "easy-auth",
     "easy",
     "firebase",
     "firestore",
-    "easy-firestore",
-    "easy-firebase"
+    "auth",
+    "awesome-firebase"
   ],
-  "homepage": "https://github.com/MDxWARRIORxOP/easy-firestore#readme",
+  "homepage": "https://github.com/MDxWARRIORxOP/awesome-firebase#readme",
   "bugs": {
-    "url": "https://github.com/MDxWARRIORxOP/easy-firestore/issues",
+    "url": "https://github.com/MDxWARRIORxOP/awesome-firebase/issues",
     "email": "Kingerious@circel.co"
   },
   "license": "BSD-3-Clause",
@@ -20,7 +21,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MDxWARRIORxOP/easy-firestore.git"
+    "url": "https://github.com/MDxWARRIORxOP/awesome-firebase.git"
   },
   "scripts": {
     "start": "node ."
