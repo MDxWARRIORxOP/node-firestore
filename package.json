@@ -24,5 +24,9 @@
   "scripts": {
     "storetest": "yarn node test/firestore.js"
   },
-  "packageManager": "yarn@3.2.4"
+  "packageManager": "yarn@3.2.4",
+  "dependencies": {
+    "firebase": "^9.12.1",
+    "firebase-admin": "^11.0.0"
+  }
 }
