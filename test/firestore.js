@@ -1,4 +1,4 @@
-const firestore = require("..");
+const firestore = require("../lib/cjs/index");
 const key = require("./firebase-key.json");
 
 const test = async () => {
@@ -11,7 +11,7 @@ const test = async () => {
   const data = await firestore.getData("hello", "hey");
   console.log("Data:", data);
 
-  await firestore.deleteData("hello", "hey");
+  await firestore.deleteDocument("hello", "hey");
   console.log("deleted data!");
 
   await firestore.deleteCollection("hello", 10);

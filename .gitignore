@@ -10,3 +10,4 @@ yarn-error.log
 firebase-key.json
 node_modules/
 .vscode/
+lib/
