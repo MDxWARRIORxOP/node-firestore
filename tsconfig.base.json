@@ -16,7 +16,6 @@
         "rootDir": "src",
         "resolveJsonModule": true,
         "traceResolution": false,
-        "declarationDir": "lib/types"
       },
       
       "compileOnSave": false,

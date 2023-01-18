@@ -4,5 +4,6 @@
       "module": "esnext",
       "outDir": "lib/mjs",
       "target": "esnext",
+      "declarationDir": "lib/types"
     },
   }

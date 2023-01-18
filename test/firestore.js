@@ -5,16 +5,16 @@ const test = async () => {
   const time = new Date().getTime();
   await firestore.initialize(key);
 
-  await firestore.addData("hello", "hey", { hello: "world" });
+  await firestore.addData(() => "hello", () => "hey", { hello: "world" });
   console.log("added data!");
 
-  const data = await firestore.getData("hello", "hey");
+  const data = await firestore.getData(() => "hello", () => "hey");
   console.log("Data:", data);
 
-  await firestore.deleteDocument("hello", "hey");
+  await firestore.deleteDocument(() => "hello", () => "hey");
   console.log("deleted data!");
 
-  await firestore.deleteCollection("hello", 10);
+  await firestore.deleteCollection(() => "hello", 10);
   console.log("deleted collection!");
 
   const timeEnd = new Date().getTime() - time;

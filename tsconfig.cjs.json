@@ -4,5 +4,6 @@
         "module": "CommonJS",
         "outDir": "lib/cjs",
         "target": "ES2015",
+        "declarationDir": "lib/types"
     },
 }

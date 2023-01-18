@@ -9,6 +9,11 @@ import {
 let app: App;
 let db: Firestore;
 
+export { ServiceAccount };
+
+export type StringLike = string | (() => string);
+export type NumberLike = number | (() => number);
+
 export const initialize = async (config: ServiceAccount) => {
   if (!app || !db) {
     app = await initializeApp({
@@ -30,8 +35,8 @@ export const initialize = async (config: ServiceAccount) => {
  * await addData("cities", "LA", { hello: "world" })
  **/
 export async function addData(
-  collectionName: string,
-  docName: string,
+  collectionName: StringLike,
+  documentName: StringLike,
   dataObj: {}
 ): Promise<Boolean> {
   if (!app || !db) {
@@ -40,8 +45,14 @@ export async function addData(
     );
   }
 
+  const colName: string =
+    typeof collectionName === "function" ? collectionName() : collectionName;
+
+  const docName: string =
+    typeof documentName === "function" ? documentName() : documentName;
+
   try {
-    const dataRef = await db.collection(collectionName).doc(docName);
+    const dataRef = await db.collection(colName).doc(docName);
     await dataRef.set(dataObj);
     return true;
   } catch (error) {
@@ -60,8 +71,8 @@ export async function addData(
  * const data = await getData("cities", "LA");
  **/
 export async function getData(
-  collectionName: string,
-  docName: string
+  collectionName: StringLike,
+  documentName: StringLike
 ): Promise<DocumentData | Boolean> {
   if (!app || !db) {
     throw new Error(
@@ -69,8 +80,14 @@ export async function getData(
     );
   }
 
+  const colName: string =
+    typeof collectionName === "function" ? collectionName() : collectionName;
+
+  const docName: string =
+    typeof documentName === "function" ? documentName() : documentName;
+
   try {
-    const dataRef = db.collection(collectionName).doc(docName);
+    const dataRef = db.collection(colName).doc(docName);
     const doc = await dataRef.get();
     if (!doc.exists) {
       return false;
@@ -94,8 +111,8 @@ export async function getData(
  * await deleteDocument("cities", "LA");
  */
 export async function deleteDocument(
-  collectionName: string,
-  docName: string
+  collectionName: StringLike,
+  documentName: StringLike
 ): Promise<Boolean> {
   if (!app || !db) {
     throw new Error(
@@ -103,8 +120,14 @@ export async function deleteDocument(
     );
   }
 
+  const colName: string =
+    typeof collectionName === "function" ? collectionName() : collectionName;
+
+  const docName: string =
+    typeof documentName === "function" ? documentName() : documentName;
+
   try {
-    await db.collection(collectionName).doc(docName).delete();
+    await db.collection(colName).doc(docName).delete();
     return true;
   } catch (error) {
     console.error(error);
@@ -142,8 +165,8 @@ const deleteBatches = async (query: Query) => {
  * deleteCollection("cities", 5);
  */
 export async function deleteCollection(
-  collectionName: string,
-  batchSize: number
+  collectionName: StringLike,
+  batchSize: NumberLike
 ): Promise<Boolean> {
   if (!app || !db) {
     throw new Error(
@@ -151,9 +174,14 @@ export async function deleteCollection(
     );
   }
 
+  const colName =
+    typeof collectionName === "function" ? collectionName() : collectionName;
+
+  const batch = typeof batchSize === "function" ? batchSize() : batchSize;
+
   try {
-    const collectionRef = await db.collection(collectionName);
-    const query = await collectionRef.orderBy("__name__").limit(batchSize);
+    const collectionRef = await db.collection(colName);
+    const query = await collectionRef.orderBy("__name__").limit(batch);
 
     await deleteBatches(query);
     return true;
