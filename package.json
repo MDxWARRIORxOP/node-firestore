@@ -1,6 +1,6 @@
 {
   "name": "node-firestore",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Using Firestore made easier!",
   "keywords": [
     "easy-db",
