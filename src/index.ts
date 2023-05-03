@@ -6,187 +6,224 @@ import {
   Query,
 } from "firebase-admin/firestore";
 
-let app: App;
-let db: Firestore;
-
-export { ServiceAccount };
-
+export type ConfigLike =
+  | (ServiceAccount | string)
+  | (() => ServiceAccount | string);
 export type StringLike = string | (() => string);
 export type NumberLike = number | (() => number);
+export type DataLike = {} | (() => {});
 
-export const initialize = async (config: ServiceAccount) => {
-  if (!app || !db) {
-    app = await initializeApp({
-      credential: cert(config),
-    });
+export class DB {
+  private config: string | ServiceAccount;
+  private app: App;
+  private db: Firestore;
 
-    db = await getFirestore(app);
-  }
-};
-
-/**
- *  @async This function is async, so please use await/promise syntax accordingly.
- *  @param collectionName name of the collection to add data to.
- *  @param docName name of the document to add data to.
- *  @param  dataObj JS object, the data to add to the document.
- *  @returns true if successful or false when unsuccessfull
- *  @example
- * import { addData } from "node-firestore";
- * await addData("cities", "LA", { hello: "world" })
- **/
-export async function addData(
-  collectionName: StringLike,
-  documentName: StringLike,
-  dataObj: {}
-): Promise<Boolean> {
-  if (!app || !db) {
-    throw new Error(
-      "Firebase is not initialized. Please initialize firebase before trying to access any of its service."
-    );
-  }
-
-  const colName: string =
-    typeof collectionName === "function" ? collectionName() : collectionName;
-
-  const docName: string =
-    typeof documentName === "function" ? documentName() : documentName;
-
-  try {
-    const dataRef = await db.collection(colName).doc(docName);
-    await dataRef.set(dataObj);
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-}
-
-/**
- *  @async This function is async, so please use await/promise syntax accordingly.
- *  @returns data if all is successful, or false
- *  @param collectionName name of the collection to get a doc from.
- *  @param docName name of the doc ot get data from.
- *  @example
- * import { getData } from "node-firestore";
- * const data = await getData("cities", "LA");
- **/
-export async function getData(
-  collectionName: StringLike,
-  documentName: StringLike
-): Promise<DocumentData | Boolean> {
-  if (!app || !db) {
-    throw new Error(
-      "Firebase is not initialized. Please initialize firebase before trying to access any of its service."
-    );
-  }
-
-  const colName: string =
-    typeof collectionName === "function" ? collectionName() : collectionName;
-
-  const docName: string =
-    typeof documentName === "function" ? documentName() : documentName;
-
-  try {
-    const dataRef = db.collection(colName).doc(docName);
-    const doc = await dataRef.get();
-    if (!doc.exists) {
-      return false;
-    } else {
-      return doc.data();
+  /**
+   * @param {ConfigLike} config Path to the firebase service account or the config in json itself
+   * @example
+   * import { DB } from "node-firestore";
+   *
+   * const db = new DB("./firebase-key.json")
+   *
+   * // OR
+   *
+   * const db2 = new DB({
+   *  clientEmail: "myClient@email.com",
+   *  privateKey: "----BEGIN PRIVATE KEY-----.......-----END PRIVATE KEY-----",
+   *  projectId: "myProjectId"
+   * })
+   */
+  constructor(config: ConfigLike) {
+    if (!config) {
+      throw new Error("No config provided.");
     }
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-}
 
-/**
- * @async This function is async, so please use await/promise syntax accordingly.
- * @returns true if all is successful, or false if unsuccessful
- * @param collectionName The name of the collection
- * @param docName The name of teh document
- * @remarks Doesn't delete sub collections.
- * @example
- * import { deleteDocument } from "node-firestore";
- * await deleteDocument("cities", "LA");
- */
-export async function deleteDocument(
-  collectionName: StringLike,
-  documentName: StringLike
-): Promise<Boolean> {
-  if (!app || !db) {
-    throw new Error(
-      "Firebase is not initialized. Please initialize firebase before trying to access any of its service."
-    );
+    this.config = typeof config == "function" ? config() : config;
+    this.app = initializeApp({
+      credential: cert(this.config),
+    });
+    this.db = getFirestore(this.app);
   }
 
-  const colName: string =
-    typeof collectionName === "function" ? collectionName() : collectionName;
+  /**
+   *  @async This function is async, so please use await/promise syntax accordingly.
+   *  @param {StringLike} collectionName name of the collection to add data to.
+   *  @param {StringLike} documentName name of the document to add data to.
+   *  @param {DataLike} data The data to add to the document.
+   *  @returns true if successful or false if unsuccessful.
+   * @remarks Modifies the data if the document already exists.
+   *  @example
+   * import { DB } from "node-firestore";
+   *
+   * const db = new DB(config);
+   * const successful = db.addData("foo", "bar", { hello: "world" });
+   *
+   * if (!successful) {
+   *    console.error("There was an error adding data to the DB!")
+   * }
+   **/
+  async addData(
+    collectionName: StringLike,
+    documentName: StringLike,
+    data: DataLike
+  ): Promise<boolean> {
+    if (!collectionName || !documentName || !data) {
+      throw new Error(
+        "No collectionName or documentName or data was provided!"
+      );
+    }
 
-  const docName: string =
-    typeof documentName === "function" ? documentName() : documentName;
+    const colName: string =
+      typeof collectionName === "function" ? collectionName() : collectionName;
 
-  try {
-    await db.collection(colName).doc(docName).delete();
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-}
+    const docName: string =
+      typeof documentName === "function" ? documentName() : documentName;
 
-const deleteBatches = async (query: Query) => {
-  const snapshot = await query.get();
+    const docData: {} = typeof data === "function" ? data() : data;
 
-  const batchSize = snapshot.size;
-  if (batchSize === 0) {
-    return true;
-  }
+    try {
+      const dataRef = this.db.collection(colName).doc(docName);
+      await dataRef.set(docData);
 
-  // Delete documents in a batch
-  const batch = db.batch();
-  snapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-  await batch.commit();
+      return true;
+    } catch (error) {
+      console.error(
+        `There was an error adding data to the collection "${colName}"! error: ${error}`
+      );
 
-  process.nextTick(() => {
-    deleteBatches(query);
-  });
-};
-
-/**
- * @async This function is async, so please use await/promise syntax accordingly.
- * @param collectionName The name of the collection to delete
- * @param batchSize The size of the batches to delete
- * @returns true is successful or false if unsuccessful
- * @example
- * import { deleteCollection } from "node-firestore";
- * deleteCollection("cities", 5);
- */
-export async function deleteCollection(
-  collectionName: StringLike,
-  batchSize: NumberLike
-): Promise<Boolean> {
-  if (!app || !db) {
-    throw new Error(
-      "Firebase is not initialized. Please initialize firebase before trying to access any of its service."
-    );
+      return false;
+    }
   }
 
-  const colName =
-    typeof collectionName === "function" ? collectionName() : collectionName;
+  /**
+   *  @async This function is async, so please use await/promise syntax accordingly.
+   *  @param {StringLike} collectionName name of the collection to add data to.
+   *  @param {StringLike} documentName name of the document to add data to.
+   *  @returns data if successful or false if unsuccessful
+   *  @example
+   * import { DB } from "node-firestore";
+   *
+   * const db = new DB(config);
+   *
+   * const data = db.getData("foo", "bar");
+   *
+   * if (!data) {
+   *  console.error("There was an error retrieving data from the DB!")
+   * }
+   **/
+  async getData(
+    collectionName: StringLike,
+    documentName: StringLike
+  ): Promise<DocumentData | false> {
+    const colName: string =
+      typeof collectionName === "function" ? collectionName() : collectionName;
 
-  const batch = typeof batchSize === "function" ? batchSize() : batchSize;
+    const docName: string =
+      typeof documentName === "function" ? documentName() : documentName;
 
-  try {
-    const collectionRef = await db.collection(colName);
-    const query = await collectionRef.orderBy("__name__").limit(batch);
+    try {
+      const dataRef = this.db.collection(colName).doc(docName);
+      const doc = await dataRef.get();
+      if (!doc.exists) {
+        return false;
+      } else {
+        return doc.data();
+      }
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
 
-    await deleteBatches(query);
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
+  /**
+   * @async This function is async, so please use await/promise syntax accordingly.
+   * @returns true if successful, or false if unsuccessful
+   * @param collectionName The name of the collection
+   * @param documentName The name of the document
+   * @example
+   * import { DB } from "node-firestore";
+   *
+   * const db = new DB(config);
+   *
+   * const deleteSuccess = db.deleteDocument("foo",
+   * bar)
+   *
+   * if (!deleteSuccess) {
+   *  console.error("There was an error deleting a document!");
+   * }
+   */
+  async deleteDocument(
+    collectionName: StringLike,
+    documentName: StringLike
+  ): Promise<Boolean> {
+    const colName: string =
+      typeof collectionName === "function" ? collectionName() : collectionName;
+
+    const docName: string =
+      typeof documentName === "function" ? documentName() : documentName;
+
+    try {
+      await this.db.collection(colName).doc(docName).delete();
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  private async deleteBatches(query: Query) {
+    const snapshot = await query.get();
+
+    const batchSize = snapshot.size;
+    if (batchSize === 0) {
+      return true;
+    }
+
+    // Delete documents in a batch
+    const batch = this.db.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+
+    process.nextTick(() => {
+      this.deleteBatches(query);
+    });
+  }
+
+  /**
+   * @async This function is async, so please use await/promise syntax accordingly.
+   * @param collectionName The name of the collection to delete
+   * @param batchSize The size of the batches to delete
+   * @returns true is successful or false if unsuccessful
+   * @example
+   * import { DB } from "node-firestore";
+   *
+   * const db = new DB(config);
+   * const deleteCollectionSuccess = db.deleteCollection("foo");
+   *
+   * if (!deleteCollectionSuccess) {
+   *  console.error("There was an error deleting a collection!")
+   * }
+   */
+  async deleteCollection(
+    collectionName: StringLike,
+    batchSize: NumberLike = 5
+  ): Promise<Boolean> {
+    const colName =
+      typeof collectionName === "function" ? collectionName() : collectionName;
+
+    const batch = typeof batchSize === "function" ? batchSize() : batchSize;
+
+    try {
+      const collectionRef = await this.db.collection(colName);
+      const query = await collectionRef.orderBy("__name__").limit(batch);
+
+      await this.deleteBatches(query);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
   }
 }
