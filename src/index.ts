@@ -50,6 +50,7 @@ export class DB {
    *  @param {StringLike} collectionName name of the collection to add data to.
    *  @param {StringLike} documentName name of the document to add data to.
    *  @param {DataLike} data The data to add to the document.
+   * @description create a new document in the specified collection with the specified name if it doesn't already exist, then stores the data in the document
    *  @returns true if successful or false if unsuccessful.
    * @remarks Modifies the data if the document already exists.
    *  @example
@@ -99,6 +100,7 @@ export class DB {
    *  @async This function is async, so please use await/promise syntax accordingly.
    *  @param {StringLike} collectionName name of the collection to add data to.
    *  @param {StringLike} documentName name of the document to add data to.
+   * @description gets data from the specified document in th specified collection.
    *  @returns data if successful or false if unsuccessful
    *  @example
    * import { DB } from "node-firestore";
@@ -140,6 +142,7 @@ export class DB {
    * @returns true if successful, or false if unsuccessful
    * @param collectionName The name of the collection
    * @param documentName The name of the document
+   * @description deleted the specified document in the specified collection
    * @example
    * import { DB } from "node-firestore";
    *
@@ -195,6 +198,7 @@ export class DB {
    * @async This function is async, so please use await/promise syntax accordingly.
    * @param collectionName The name of the collection to delete
    * @param batchSize The size of the batches to delete
+   * @description deletes the specified collection
    * @returns true is successful or false if unsuccessful
    * @example
    * import { DB } from "node-firestore";
